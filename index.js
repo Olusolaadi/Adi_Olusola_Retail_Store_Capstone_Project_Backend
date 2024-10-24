@@ -1,34 +1,30 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
+import userRouter from "./routes/user.js";
 
-import authRoutes from "./routes/auth.js";
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 9000;
+const PORT = process.env.PORT || 8000;
 
-  // ===== Connect to MongoDB ===== //
+// ===== Connect to MongoDB ===== //
 try {
   await mongoose.connect(process.env.MONGODB_URI);
-  console.log(PORT);
   console.log(`Connected to mongodb`);
 } catch (error) {
-  console.error(error);  
+  console.error(error);
 }
 
 app.use(express.json());
-app.use(cookieParser());
-
-
-app.use("/api/auth", authRoutes);
+app.use('/api/user', userRouter);
 
 app.get("/", (req, res) => {
-    res.status(200);
-  res.send("Hello World");
+  res.status(200);
+  res.send("<h1>Welcome to my API</h1>");
 });
 
-
-app.listen(PORT, () => console.log(`Server is listening on port: ${PORT} `));
+app.listen(PORT, () => {
+  console.log(`Server is running on port: ${PORT}`);
+});
 
