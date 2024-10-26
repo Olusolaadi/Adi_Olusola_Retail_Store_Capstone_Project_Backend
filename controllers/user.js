@@ -1,6 +1,5 @@
 import User from "../models/User.js";
 import { getError } from "../utils/error.js";
-import jwt from "jsonwebtoken";
 
 export const getUser = async (req, res) => {
   const { name, username, email, password } = req.body;
@@ -50,6 +49,17 @@ const user = await User.findOne({ email });
   const isMatch = await user.comparePassword(password)
   if (!isMatch) return getError(res, "email or password does not match.")
 
+    res.json({
+      success: true,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        password: user.password,
+      },
+    });
+
+   /*
    const token =  jwt.sign({userId: user._id}, process.env.JWT_SECRET, {expiresIn: "3d"}, (e, token) => {
       if (e) throw e;
       res.json({
@@ -63,6 +73,7 @@ const user = await User.findOne({ email });
         },
       });
     });
+    */
 
   }
 
