@@ -1,76 +1,82 @@
 import Product from "../models/Product.js";
-import cloudinary from "../lib/cloudinary.js";
+// import cloudinary from "../lib/cloudinary.js";
 
+// Get all products
+export  const fetchAllProducts = async (req, res) => {
+	try {
+	  const products = await Product.find();
 
-
-export const getAllProducts = async (req, res) => {
-    try {
-        const products = await Product.find({}); 
-        res.json({ products });
-    } catch (error) {
-        console.log("Error", error.message);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
-    }
-};
-
-export const createProduct = async (req, res) => {
-    try {
-        const { title, description, price, image, category } = req.body;
-        let cloudinaryResponse = null;
-
-        if (image) {
-            cloudinaryResponse = await cloudinary.uploader.upload(image, { folder: "products" });
-        }
-
-        const product = await Product.create({
-			title,
-			description,
-			price,
-			image: cloudinaryResponse?.secure_url ? cloudinaryResponse.secure_url : "",
-			category,
-		});
-
-		res.status(201).json(product);
+	  res.json(products);
 	} catch (error) {
-		console.log("Error in createProduct controller", error.message);
-		res.status(500).json({ message: "Server error", error: error.message });
+	  res.status(500).json({ message: "Products cannot be fetched.", error: error.message });
+	}
+  };
+
+  // Get a single product by ID
+  export const fetchProductById = async (req, res) => {
+	try {
+	  const product = await Product.findById(req.params.id);
+	  res.json(product);
+	} catch (error) {
+		res.status(500).json({ message: "Product not found..", error: error.message });
+	}
+  };
+
+  // Get products by category
+  export const fetchProductsByCategory = async (req, res) => {
+	try {
+	  const products = await Product.find({ category: req.params.category });
+	  res.json(products);
+	} catch (error) {
+		res.status(500).json({ message: "Products not found.", error: error.message });
+	}
+	};
+
+  // Create a new product
+  export const createProduct = async (req, res) => {
+	try {
+	  const { title, description, price, image, category } = req.body;
+	  const product = await Product.create({
+		title,
+		description,
+		price,
+		image,
+		category,
+	  });
+	  res.status(201).json(product);
+	  console.log(product);
+	} catch (error) {
+	  res.status(500).json({ message: "Product cannot be created.", error: error.message });
 	}
 };
 
+// Update a product
+export const updateProduct = async (req, res) => {
+	try {
+		const { title, description, price, image, category } = req.body;
+		const product = await Product.findByIdAndUpdate(
+			req.params.id,
+			{ title, description, price, image, category },
+			{ new: true });
+			console.log(product);
+			res.status(201).json(product);
+	} catch (error) {
+	  res.status(500).json({ message: "Product cannot be updated.", error: error.message });
+	}
+};
+
+// Delete a product
 export const deleteProduct = async (req, res) => {
 	try {
-		const product = await Product.findById(req.params.id);
-
-		if (!product) {
-			return res.status(404).json({ message: "Product not found" });
-		}
-
-		if (product.image) {
-			const publicId = product.image.split("/").pop().split(".")[0];
-			try {
-				await cloudinary.uploader.destroy(`products/${publicId}`);
-				console.log("deleted image from cloduinary");
-			} catch (error) {
-				console.log("error deleting image from cloduinary", error);
-			}
-		}
-
-		await Product.findByIdAndDelete(req.params.id);
-
+		const product = await Product.findByIdAndDelete(req.params.id);
 		res.json({ message: "Product deleted successfully" });
 	} catch (error) {
-		console.log("Error in deleteProduct controller", error.message);
-		res.status(500).json({ message: "Server error", error: error.message });
-	}
-}
-
-export const getProductsByCategory = async (req, res) => {
-	const { category } = req.params;
-	try {
-		const products = await Product.find({ category });
-		res.json({ products });
-	} catch (error) {
-		console.log("Error in getProductsByCategory controller", error.message);
-		res.status(500).json({ message: "Server error", error: error.message });
+		res.status(500).json({ message: "Product cannot be deleted.", error: error.message });
 	}
 };
+
+
+
+       
+
+
